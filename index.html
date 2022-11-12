@@ -1,0 +1,320 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <meta charset='utf-8' />
+  <title></title>
+  <meta name='viewport' content='initial-scale=1,maximum-scale=1,user-scalable=no' />
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.5.0/jquery.min.js"></script>
+  <script src='https://api.mapbox.com/mapbox-gl-js/v2.0.1/mapbox-gl.js'></script>
+  <link href='https://api.mapbox.com/mapbox-gl-js/v2.0.1/mapbox-gl.css' rel='stylesheet' />
+  <script src='https://npmcdn.com/csv2geojson@latest/csv2geojson.js'></script>
+  <script src='https://npmcdn.com/@turf/turf/turf.min.js'></script>
+  <script src="https://unpkg.com/papaparse@latest/papaparse.min.js"></script>
+  <style>
+    body {
+      margin: 0;
+      padding: 0;
+    }
+
+    #map {
+      position: absolute;
+      top: 0;
+      bottom: 0;
+      width: 100%;
+    }
+
+    /* Popup styling */
+
+    .mapboxgl-popup {
+      padding-bottom: 5px;
+    }
+
+    .mapboxgl-popup-close-button {
+      display: none;
+    }
+
+    .mapboxgl-popup-content {
+      font: 400 15px/22px 'Source Sans Pro', 'Helvetica Neue', Sans-serif;
+      padding: 0;
+      width: 250px;
+    }
+
+    .mapboxgl-popup-content-wrapper {
+      padding: 1%;
+    }
+
+    .mapboxgl-popup-content h3 {
+      background: rgb(61, 59, 59);
+      text-align: center;
+      color: #fff;
+      margin: 0;
+      display: block;
+      padding: 15px;
+      font-weight: 700;
+      margin-top: -5px;
+    }
+
+    .mapboxgl-popup-content h4 {
+      margin: 0;
+      display: block;
+      padding: 10px 3px 10px 10px;
+      font-weight: 400;
+    }
+
+    .mapboxgl-container {
+      cursor: pointer;
+    }
+
+    .mapboxgl-popup-anchor-top>.mapboxgl-popup-content {
+      margin-top: 3px;
+    }
+
+    .mapboxgl-popup-anchor-top>.mapboxgl-popup-tip {
+      border-bottom-color: rgb(61, 59, 59);
+    }
+  </style>
+</head>
+
+<body>
+
+  <div id='map'></div>
+  <script>
+
+    const csvUrl = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vSqY-wNoCAmjHzwpPT1lOaSfAykLXMTB1p1r7XtBR310M3vbVUdaZpZxNVKq41D1Q2Jj18pTVki-h_K/pub?gid=0&single=true&output=csv'
+    const csvPromise = papaPromise(csvUrl);
+
+    var transformRequest = (url, resourceType) => {
+      var isMapboxRequest =
+        url.slice(8, 22) === "api.mapbox.com" ||
+        url.slice(10, 26) === "tiles.mapbox.com";
+      return {
+        url: isMapboxRequest
+          ? url.replace("?", "?pluginName=sheetMapper&")
+          : url
+      };
+    };
+    //YOUR TURN: add your Mapbox token
+    
+    mapboxgl.accessToken = 'pk.eyJ1IjoidGdlcnRpbiIsImEiOiJYTW5sTVhRIn0.X4B5APkxkWVaiSg3KqMCaQ'; //Mapbox token 
+    var map = new mapboxgl.Map({
+      container: 'map', // container id
+      style: 'mapbox://styles/mapbox/streets-v11', // YOUR TURN: choose a style: https://docs.mapbox.com/api/maps/#styles
+      center: [71.65, 41.04], // starting position [lng, lat]
+      zoom: 11,// starting zoom
+      transformRequest: transformRequest
+    });
+
+    let hoveredStateId = null;
+
+    map.on("load", function () {
+        csvPromise.then(function (results) {
+          console.log(results.data);
+          results.data.forEach((row) => {
+            //console.log(row.mahallaid);
+            map.setFeatureState(
+              {
+                //YOUR TURN: Replace with your source tileset and source layer
+                source: "namangan_mahallas_geo2-2rwi9v",
+                sourceLayer: "namangan_mahallas_geo2-2rwi9v",
+                //YOUR TURN: Replace with unique ID row name
+                id: row.mahallaid
+              },
+              //YOUR TURN: Add rows you want to style/interact with
+              {
+                age_06: row.age_06,
+                age_013: row.age_013,
+                apt: row.apt,
+                aptblocks: row.aptblocks,
+                areaMP: row.areaMP,
+                city: row.city,
+                emigrants: row.emigrants,
+                employee: row.employee,
+                employrate: row.employrate,
+                hh: row.hh,
+                houses: row.houses,
+                itn: row.itn,
+                mahallaid: row.mahallaid,
+                name: row.name,
+                nonregistered: row.nonregistered,
+                poorshare: row.poorshare,
+                pop: row.pop,
+                selfemploy: row.selfemploy,
+                womanshare: row.womanshare
+              }
+            );
+          });
+        });
+
+        map.addSource('namangan_mahallas_geo2-2rwi9v', {
+            type: "vector",
+            url: "mapbox://tgertin.4i6l9tmo",
+            promoteId: "obj_id_str",
+        });
+
+        //Add the the layer to the map
+        map.addLayer({
+          id: "mahalla-polygon-fill",
+          type: "fill",
+          source: "namangan_mahallas_geo2-2rwi9v",
+          "source-layer": "namangan_mahallas_geo2-2rwi9v",
+          layout: {},
+          paint: {
+            "fill-color": '#0080ff',
+            'fill-opacity': [
+                'case',
+                ['boolean', ['feature-state', 'hover'], false],
+                .8,
+                0.5
+                ]
+          },
+        });
+
+        map.addLayer({
+          id: "mahalla-polygon-line",
+          type: "line",
+          source: "namangan_mahallas_geo2-2rwi9v",
+          "source-layer": "namangan_mahallas_geo2-2rwi9v",
+          layout: {
+            "line-join": "round",
+            "line-cap": "round",
+          },
+          paint: {
+            "line-color": "#D8CAC1",
+            "line-width": 1,
+          },
+        });
+        
+        // When a click event occurs on a feature in the csvData layer, open a popup at the
+        // location of the feature, with description HTML from its properties.
+        map.on('click', 'mahalla-polygon-fill', function (e) {
+            //var coordinates = e.features[0].geometry.coordinates.slice();
+            map.getCanvas().style.cursor = "pointer";
+
+            var mahalla = map.queryRenderedFeatures(e.point, {
+                layers: ["mahalla-polygon-fill"],
+            });
+
+            var props = mahalla[0].properties;
+
+            var state = mahalla[0].state;
+
+            console.log('log state')
+            console.log(state)
+
+            //set popup text
+            //You can adjust the values of the popup to match the headers of your CSV.
+            // For example: e.features[0].properties.Name is retrieving information from the field Name in the original CSV.
+            console.log('log e')
+            console.log(e.features[0])
+            var description = `<h3>` + state.name + `</h3>` + `<h4>` + `<b>` 
+                + `age_06: ` + `</b>` + state.age_06 + `</h4>` + `<h4>` + `<b>`
+                + `age_013: ` + `</b>` + state.age_013 + `</h4>` + `<h4>` + `<b>` 
+                + `apt: ` + `</b>` + state.apt + `</h4>` + `<h4>` + `<b>` 
+                + `areaMP: ` + `</b>` + state.areaMP + `</h4>` + `<h4>` + `<b>` 
+                + `city: ` + `</b>` + state.city + `</h4>` + `<h4>` + `<b>` 
+                + `emigrants: ` + `</b>` + state.emigrants + `</h4>` + `<h4>` + `<b>` 
+                + `employee: ` + `</b>` + state.employee + `</h4>` + `<h4>` + `<b>` 
+                + `employrate: ` + `</b>` + state.employrate + `</h4>` + `<h4>` + `<b>` 
+                + `hh: ` + `</b>` + state.hh + `</h4>` + `<h4>` + `<b>` 
+                + `houses: ` + `</b>` + state.houses + `</h4>` + `<h4>` + `<b>`
+                + `itn: ` + `</b>` + state.itn + `</h4>` + `<h4>` + `<b>`
+                + `mahallaid: ` + `</b>` + state.mahallaid + `</h4>` + `<h4>` + `<b>`
+                + `name: ` + `</b>` + state.name + `</h4>` + `<h4>` + `<b>`
+                + `nonregistered: ` + `</b>` + state.nonregistered + `</h4>` + `<h4>` + `<b>`
+                + `poorshare: ` + `</b>` + state.poorshare + `</h4>` + `<h4>` + `<b>`
+                + `pop: ` + `</b>` + state.pop + `</h4>` + `<h4>` + `<b>`
+                + `selfemploy: ` + `</b>` + state.selfemploy + `</h4>` + `<h4>` + `<b>`
+                + `womanshare: ` + `</b>` + state.womanshare + `</h4>`;
+                // + `<form action="/action_page.php" class="form-container">`
+                // + `    <h1>Login</h1>`
+                // + `<label for="email"><b>Email</b></label>`
+                // + `<input type="text" placeholder="Enter Email" name="email" required>`
+                // + `<label for="psw"><b>Password</b></label>`
+                // + `<input type="password" placeholder="Enter Password" name="psw" required>`
+                // + `<button type="submit" class="btn">Login</button>`
+                // + `<button type="button" class="btn cancel" onclick="closeForm()">Close</button>`
+                // + `</form>`;
+
+        
+
+            // Ensure that if the map is zoomed out such that multiple
+            // copies of the feature are visible, the popup appears
+            // over the copy being pointed to.
+            // while (Math.abs(e.lngLat.lng - coordinates[0]) > 180) {
+            // coordinates[0] += e.lngLat.lng > coordinates[0] ? 360 : -360;
+            // }
+
+            //add Popup to map
+            new mapboxgl.Popup().setLngLat(e.lngLat).setHTML(description).addTo(map);
+        });
+
+        // Change the cursor to a pointer when the mouse is over the places layer.
+        map.on('mouseenter', 'mahalla-polygon-fill', function () {
+            map.getCanvas().style.cursor = 'pointer';
+        });
+
+        // Change it back to a pointer when it leaves.
+        map.on('mouseleave', 'mahalla-polygon-fill', function () {
+            map.getCanvas().style.cursor = '';
+        });
+
+        // When the user moves their mouse over the state-fill layer, we'll update the
+        // feature state for the feature under the mouse.
+        map.on('mousemove', 'mahalla-polygon-fill', (e) => {
+            if (e.features.length > 0) {
+                if (hoveredStateId !== null) {
+                    map.setFeatureState(
+                    { source: 'namangan_mahallas_geo2-2rwi9v',
+                    sourceLayer: 'namangan_mahallas_geo2-2rwi9v',
+                    id: hoveredStateId },
+                    { hover: false }
+                    );
+            }
+            hoveredStateId = e.features[0].id;
+            map.setFeatureState(
+            { source: 'namangan_mahallas_geo2-2rwi9v',
+            sourceLayer: 'namangan_mahallas_geo2-2rwi9v',
+            id: hoveredStateId },
+            { hover: true }
+            );
+            }
+        });
+        
+        // When the mouse leaves the state-fill layer, update the feature state of the
+        // previously hovered feature.
+        map.on('mouseleave', 'mahalla-polygon-fill', () => {
+            if (hoveredStateId !== null) {
+                map.setFeatureState(
+                { source: 'namangan_mahallas_geo2-2rwi9v',
+                sourceLayer: 'namangan_mahallas_geo2-2rwi9v',
+                id: hoveredStateId },
+                { hover: false }
+                );
+            }
+            hoveredStateId = null;
+        });              
+
+        //var bbox = turf.bbox(data);
+        //map.fitBounds(bbox, { padding: 50 });
+
+    });
+
+    function papaPromise(url) {
+        return new Promise(function (resolve, reject) {
+          Papa.parse(url, {
+            download: true,
+            header: true,
+            skipEmptyLines: true,
+            complete: resolve,
+          });
+        });
+      }
+
+
+
+  </script>
+
+</body>
+
+</html>
