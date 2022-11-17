@@ -119,8 +119,8 @@
                 sourceLayer: "namangan_mahallas_geo2-2rwi9v",
                 //YOUR TURN: Replace with unique ID row name
                 id: row.mahallaid
-              },
-              //YOUR TURN: Add rows you want to style/interact with
+              },																																																																													
+              //YOUR TURN: Add rows you want to style/interact with																																																																														
               {
                 age_06: row.age_06,
                 age_013: row.age_013,
@@ -134,13 +134,13 @@
                 hh: row.hh,
                 houses: row.houses,
                 itn: row.itn,
-                mahallaid: row.mahallaid,
                 name: row.name,
                 nonregistered: row.nonregistered,
-                poorshare: row.poorshare,
+                poorhhshare: row.poorhhshare,
                 pop: row.pop,
                 selfemploy: row.selfemploy,
-                womanshare: row.womanshare
+                womenshare: row.womenshare,
+                workagepop: row.workagepop
               }
             );
           });
@@ -211,6 +211,7 @@
                 + `age_06: ` + `</b>` + state.age_06 + `</h4>` + `<h4>` + `<b>`
                 + `age_013: ` + `</b>` + state.age_013 + `</h4>` + `<h4>` + `<b>` 
                 + `apt: ` + `</b>` + state.apt + `</h4>` + `<h4>` + `<b>` 
+                + `aptblocks: ` + `</b>` + state.aptblocks + `</h4>` + `<h4>` + `<b>` 
                 + `areaMP: ` + `</b>` + state.areaMP + `</h4>` + `<h4>` + `<b>` 
                 + `city: ` + `</b>` + state.city + `</h4>` + `<h4>` + `<b>` 
                 + `emigrants: ` + `</b>` + state.emigrants + `</h4>` + `<h4>` + `<b>` 
@@ -219,13 +220,12 @@
                 + `hh: ` + `</b>` + state.hh + `</h4>` + `<h4>` + `<b>` 
                 + `houses: ` + `</b>` + state.houses + `</h4>` + `<h4>` + `<b>`
                 + `itn: ` + `</b>` + state.itn + `</h4>` + `<h4>` + `<b>`
-                + `mahallaid: ` + `</b>` + state.mahallaid + `</h4>` + `<h4>` + `<b>`
-                + `name: ` + `</b>` + state.name + `</h4>` + `<h4>` + `<b>`
                 + `nonregistered: ` + `</b>` + state.nonregistered + `</h4>` + `<h4>` + `<b>`
-                + `poorshare: ` + `</b>` + state.poorshare + `</h4>` + `<h4>` + `<b>`
+                + `poorhhshare: ` + `</b>` + state.poorhhshare + `</h4>` + `<h4>` + `<b>`
                 + `pop: ` + `</b>` + state.pop + `</h4>` + `<h4>` + `<b>`
                 + `selfemploy: ` + `</b>` + state.selfemploy + `</h4>` + `<h4>` + `<b>`
-                + `womanshare: ` + `</b>` + state.womanshare + `</h4>`;
+                + `womanshare: ` + `</b>` + state.womanshare + `</h4>` + `<h4>` + `<b>`
+                + `workagepop: ` + `</b>` + state.workagepop + `</h4>`;
                 // + `<form action="/action_page.php" class="form-container">`
                 // + `    <h1>Login</h1>`
                 // + `<label for="email"><b>Email</b></label>`
@@ -310,6 +310,10 @@
           });
         });
       }
+
+
+
+
 
 
 
